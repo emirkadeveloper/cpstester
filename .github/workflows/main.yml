@@ -10,38 +10,46 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      # 1. Скачиваем код репозитория (Обновлено до v4)
+      - uses: actions/checkout@v4
 
-      # Кэширование, чтобы повторные сборки шли быстрее
-      - name: Get Date
-        id: get-date
+      # 2. Освобождаем место (Ubuntu runners имеют мало места, это поможет избежать ошибок)
+      - name: Free Disk Space
         run: |
-          echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
-        shell: bash
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
-      - name: Cache Buildozer global directory
-        uses: actions/cache@v2
-        with:
-          path: .buildozer_global
-          key: buildozer-global-${{ hashFiles('buildozer.spec') }}
+      # 3. Устанавливаем системные зависимости для Buildozer
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git zip unzip openjdk-17-jdk python3-pip \
+            autoconf libtool pkg-config zlib1g-dev \
+            libncurses5-dev libncursesw5-dev libtinfo5 \
+            cmake libffi-dev libssl-dev
 
-      - name: Cache Buildozer directory
-        uses: actions/cache@v2
-        with:
-          path: .buildozer
-          key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
+      # 4. Устанавливаем Buildozer и Cython через pip
+      - name: Install Buildozer
+        run: |
+          pip3 install --upgrade pip
+          pip3 install --user --upgrade buildozer cython virtualenv
 
-      # Сама сборка
+      # 5. Добавляем путь к pip в переменные среды
+      - name: Add local bin to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      # 6. Запускаем сборку
       - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action-v1@v1
-        id: buildozer
-        with:
-          command: buildozer android debug
-          buildozer_version: master
+        run: |
+          # Автоматически соглашаемся с лицензией, если спросит
+          yes | buildozer android debug
 
-      # Загрузка готового APK
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+      # 7. Загружаем готовый APK (Обновлено до v4)
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
         with:
-          name: package
-          path: ${{ steps.buildozer.outputs.filename }}
+          name: CPS-Tester-APK
+          path: bin/*.apk
