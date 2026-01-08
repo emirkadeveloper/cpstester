@@ -7,13 +7,12 @@ on:
 
 jobs:
   build:
-    # ВАЖНО: Используем 22.04, так как на latest (24.04) ломается python-for-android
     runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
 
-      # Очистка места (чтобы не кончилась память)
+      # Очистка места
       - name: Free Disk Space
         run: |
           sudo rm -rf /usr/share/dotnet
@@ -21,7 +20,7 @@ jobs:
           sudo rm -rf "/usr/local/share/boost"
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
-      # Установка зависимостей (стабильный набор для Ubuntu 22.04)
+      # Установка системных зависимостей
       - name: Install System Dependencies
         run: |
           sudo apt-get update
@@ -31,11 +30,12 @@ jobs:
             libncurses5-dev libncursesw5-dev libtinfo5 \
             cmake libffi-dev libssl-dev
 
-      # Установка Buildozer
-      - name: Install Buildozer
+      # ВАЖНОЕ ИСПРАВЛЕНИЕ ЗДЕСЬ:
+      # Мы ставим cython==0.29.36, чтобы избежать ошибки с 'long'
+      - name: Install Buildozer and Cython
         run: |
           pip3 install --upgrade pip
-          pip3 install --user --upgrade buildozer cython virtualenv
+          pip3 install --user --upgrade buildozer "cython==0.29.36" virtualenv
 
       # Настройка PATH
       - name: Add local bin to PATH
@@ -44,7 +44,6 @@ jobs:
       # Сборка
       - name: Build with Buildozer
         run: |
-          # yes | нужен, чтобы автоматически принимать лицензии
           yes | buildozer android debug
 
       # Загрузка результата
