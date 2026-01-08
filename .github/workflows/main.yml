@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Очистка диска
+      # Очистка места
       - name: Free Disk Space
         run: |
           sudo rm -rf /usr/share/dotnet
@@ -20,8 +20,7 @@ jobs:
           sudo rm -rf "/usr/local/share/boost"
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
-      # Установка зависимостей
-      # ВАЖНО: Ставим openjdk-11-jdk вместо 17
+      # Установка зависимостей (Добавил autopoint и automake - важно для p4a)
       - name: Install System Dependencies
         run: |
           sudo apt-get update
@@ -30,10 +29,9 @@ jobs:
             autoconf libtool pkg-config zlib1g-dev \
             libncurses5-dev libncursesw5-dev libtinfo5 \
             cmake libffi-dev libssl-dev \
-            libltdl-dev
+            libltdl-dev autopoint automake gettext
 
       # Установка Buildozer и Cython
-      # Используем стабильную версию Cython
       - name: Install Buildozer
         run: |
           pip3 install --upgrade pip
@@ -44,9 +42,11 @@ jobs:
         run: echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       # Сборка
-      # yes | ... нужен для принятия лицензий SDK
+      # ВАЖНО: Мы удаляем ссылки на системный Android SDK, чтобы Buildozer скачал свой
       - name: Build with Buildozer
         run: |
+          export ANDROID_HOME=""
+          export ANDROID_NDK_HOME=""
           yes | buildozer android debug
 
       # Загрузка APK
