@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Очистка места
+      # Очистка диска
       - name: Free Disk Space
         run: |
           sudo rm -rf /usr/share/dotnet
@@ -20,33 +20,36 @@ jobs:
           sudo rm -rf "/usr/local/share/boost"
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
-      # Установка системных зависимостей
+      # Установка зависимостей
+      # ВАЖНО: Ставим openjdk-11-jdk вместо 17
       - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            git zip unzip openjdk-17-jdk python3-pip \
+            git zip unzip openjdk-11-jdk python3-pip \
             autoconf libtool pkg-config zlib1g-dev \
             libncurses5-dev libncursesw5-dev libtinfo5 \
-            cmake libffi-dev libssl-dev
+            cmake libffi-dev libssl-dev \
+            libltdl-dev
 
-      # ВАЖНОЕ ИСПРАВЛЕНИЕ ЗДЕСЬ:
-      # Мы ставим cython==0.29.36, чтобы избежать ошибки с 'long'
-      - name: Install Buildozer and Cython
+      # Установка Buildozer и Cython
+      # Используем стабильную версию Cython
+      - name: Install Buildozer
         run: |
           pip3 install --upgrade pip
-          pip3 install --user --upgrade buildozer "cython==0.29.36" virtualenv
+          pip3 install --user --upgrade buildozer "cython==0.29.33" virtualenv
 
       # Настройка PATH
       - name: Add local bin to PATH
         run: echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       # Сборка
+      # yes | ... нужен для принятия лицензий SDK
       - name: Build with Buildozer
         run: |
           yes | buildozer android debug
 
-      # Загрузка результата
+      # Загрузка APK
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
