@@ -6,7 +6,7 @@ package.domain = org.emirkadev
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json
 version = 1.0
-requirements = python3,kivy==2.3.0,kivymd,pillow,sdl2_ttf
+requirements = python3,kivy==2.3.0,https://github.com/kivymd/KivyMD/archive/master.zip,pillow,sdl2_ttf
 orientation = portrait
 fullscreen = 0
 android.presplash_color = #121212
@@ -27,3 +27,4 @@ android.debug_artifact = apk
 log_level = 2
 
 warn_on_root = 1
+
