@@ -21,10 +21,6 @@ android.archs = arm64-v8a, armeabi-v7a
 android.allow_backup = True
 
 android.debug_artifact = apk
-
-# (int) Target Android API (Ставим 33, это стабильно)
-android.api = 33
-
 # (int) Minimum API
 android.minapi = 21
 
@@ -36,6 +32,7 @@ android.accept_sdk_license = True
 log_level = 2
 
 warn_on_root = 1
+
 
 
 
