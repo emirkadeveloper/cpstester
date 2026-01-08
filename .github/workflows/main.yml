@@ -10,10 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Скачиваем код репозитория (Обновлено до v4)
       - uses: actions/checkout@v4
 
-      # 2. Освобождаем место (Ubuntu runners имеют мало места, это поможет избежать ошибок)
+      # Очистка места
       - name: Free Disk Space
         run: |
           sudo rm -rf /usr/share/dotnet
@@ -21,33 +20,32 @@ jobs:
           sudo rm -rf "/usr/local/share/boost"
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
-      # 3. Устанавливаем системные зависимости для Buildozer
+      # Установка зависимостей (ИСПРАВЛЕНО: убрал libtinfo5, добавил libncurses-dev)
       - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             git zip unzip openjdk-17-jdk python3-pip \
             autoconf libtool pkg-config zlib1g-dev \
-            libncurses5-dev libncursesw5-dev libtinfo5 \
+            libncurses-dev libncurses5-dev \
             cmake libffi-dev libssl-dev
 
-      # 4. Устанавливаем Buildozer и Cython через pip
+      # Установка Buildozer
       - name: Install Buildozer
         run: |
           pip3 install --upgrade pip
           pip3 install --user --upgrade buildozer cython virtualenv
 
-      # 5. Добавляем путь к pip в переменные среды
+      # Настройка PATH
       - name: Add local bin to PATH
         run: echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-      # 6. Запускаем сборку
+      # Сборка
       - name: Build with Buildozer
         run: |
-          # Автоматически соглашаемся с лицензией, если спросит
           yes | buildozer android debug
 
-      # 7. Загружаем готовый APK (Обновлено до v4)
+      # Загрузка результата
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
