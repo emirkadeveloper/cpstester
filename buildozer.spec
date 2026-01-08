@@ -22,10 +22,20 @@ android.allow_backup = True
 
 android.debug_artifact = apk
 
+# (int) Target Android API (Ставим 33, это стабильно)
+android.api = 33
+
+# (int) Minimum API
+android.minapi = 21
+
+# (bool) Автоматически принимать лицензию
+android.accept_sdk_license = True
+
 [buildozer]
 
-log_level = 1
+log_level = 2
 
 warn_on_root = 1
+
 
 
