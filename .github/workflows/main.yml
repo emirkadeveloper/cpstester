@@ -7,12 +7,13 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # ВАЖНО: Используем 22.04, так как на latest (24.04) ломается python-for-android
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
 
-      # Очистка места
+      # Очистка места (чтобы не кончилась память)
       - name: Free Disk Space
         run: |
           sudo rm -rf /usr/share/dotnet
@@ -20,14 +21,14 @@ jobs:
           sudo rm -rf "/usr/local/share/boost"
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
-      # Установка зависимостей (ИСПРАВЛЕНО: убрал libtinfo5, добавил libncurses-dev)
+      # Установка зависимостей (стабильный набор для Ubuntu 22.04)
       - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             git zip unzip openjdk-17-jdk python3-pip \
             autoconf libtool pkg-config zlib1g-dev \
-            libncurses-dev libncurses5-dev \
+            libncurses5-dev libncursesw5-dev libtinfo5 \
             cmake libffi-dev libssl-dev
 
       # Установка Buildozer
@@ -43,6 +44,7 @@ jobs:
       # Сборка
       - name: Build with Buildozer
         run: |
+          # yes | нужен, чтобы автоматически принимать лицензии
           yes | buildozer android debug
 
       # Загрузка результата
