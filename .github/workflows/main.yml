@@ -20,7 +20,8 @@ jobs:
           sudo rm -rf "/usr/local/share/boost"
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
-      # Установка зависимостей (Добавил autopoint и automake - важно для p4a)
+      # Установка зависимостей
+      # ДОБАВЛЕНО: libjpeg-dev (нужен для Pillow), libltdl-dev
       - name: Install System Dependencies
         run: |
           sudo apt-get update
@@ -29,24 +30,27 @@ jobs:
             autoconf libtool pkg-config zlib1g-dev \
             libncurses5-dev libncursesw5-dev libtinfo5 \
             cmake libffi-dev libssl-dev \
-            libltdl-dev autopoint automake gettext
+            libltdl-dev autopoint automake gettext \
+            libjpeg-dev
 
-      # Установка Buildozer и Cython
+      # Установка Buildozer и Python-библиотек
+      # ДОБАВЛЕНО: setuptools<65.0.0 (лечит ошибки компиляции рецептов)
       - name: Install Buildozer
         run: |
           pip3 install --upgrade pip
-          pip3 install --user --upgrade buildozer "cython==0.29.33" virtualenv
+          pip3 install --user --upgrade buildozer "cython==0.29.33" virtualenv "setuptools<65.0.0"
 
       # Настройка PATH
       - name: Add local bin to PATH
         run: echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       # Сборка
-      # ВАЖНО: Мы удаляем ссылки на системный Android SDK, чтобы Buildozer скачал свой
+      # Очищаем переменные SDK, чтобы Buildozer скачал свои
       - name: Build with Buildozer
         run: |
           export ANDROID_HOME=""
           export ANDROID_NDK_HOME=""
+          # yes | принимает лицензии, если buildozer спросит
           yes | buildozer android debug
 
       # Загрузка APK
